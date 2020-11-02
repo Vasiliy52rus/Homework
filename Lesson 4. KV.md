@@ -1,74 +1,81 @@
 # Homework
 //
 //  main.swift
-//  L4 Князев Василий
+//  Lesson-6
 //
-//  Created by Vasiliy Knyazev on 10/24/20.
+//  Created by Vasiliy Knyazev on 11/1/20.
 //
-
 import Foundation
 
-
-enum Action {
-    //MARK:- TruckCar actions
-    case raseBody, lowerBody
-    //MARK:- SportCar actions
-    case raseSpoiler, lowerSpoiler
+enum Books {
+    case fantasy, adventure, science
 }
 
-class Car {
-    var year: Int
-    var model: String
-    var numberOfDoors: Int
-    var engine: String
+protocol SomeBook{
+    var numberOfBooks: Int { get set}
     
-    init(year: Int, model: String, numberOfDoors: Int, engine: String) {
-        self.year = year
-        self.model = model
-        self.numberOfDoors = numberOfDoors
-        self.engine = engine
-    }
-    func handleAction (_ action: Action) {}
 }
-class TruckCar: Car {
-    var fillTrunk: Bool
-    var action: Action
-    init(fillTrunk: Bool, action: Action, year: Int, model: String, numberOfDoors: Int, engine: String) {
-        self.fillTrunk = fillTrunk
-        self.action = action
-        super.init(year: year, model: model, numberOfDoors: numberOfDoors, engine: engine)
-    }
-    override func handleAction(_ action: Action) {
-        self.action = .lowerBody
-        print("Кузов опущен")
-    }
-}
-class SportCar: Car {
-    var speed: Int
-    var action: Action
-    init(speed: Int, action: Action, year: Int, model: String, numberOfDoors: Int, engine: String) {
-        self.speed = speed
-        self.action = action
-        super.init(year: year, model: model, numberOfDoors: numberOfDoors, engine: engine)
-    }
-    override func handleAction(_ action: Action) {
-        self.action = .raseSpoiler
-        print("Спойлер поднят")
-    }
-}
-var car = Car(year: 2005, model: "Toyota", numberOfDoors: 4, engine: "Diesel")
-var car1 = TruckCar(fillTrunk: true, action: .lowerBody, year: 2007, model: "Volvo", numberOfDoors: 2, engine: "Diesel")
-var car2 = SportCar(speed: 250, action: .raseSpoiler, year: 2020, model: "Ferrari", numberOfDoors: 2, engine: "Petrol")
 
-print(car.model)
-print(car.engine)
-print(car.numberOfDoors)
-print(car1.model)
-print(car1.engine)
-print(car1.action)
-print(car1.handleAction(.lowerBody))
-print(car2.model)
-print(car2.speed)
-print(car2.engine)
-print(car2.action)
-print(car2.handleAction(.raseSpoiler))
+struct Book: SomeBook {
+    var numberOfBooks: Int
+    var genre: Books
+}
+
+extension Book: CustomStringConvertible{
+    var description: String {
+        return "In library \(numberOfBooks)  \(genre)"
+    }
+}
+   
+
+struct Queue<T: SomeBook> {
+    private var elements: [T] = []
+
+    mutating func enqueue(element: T) {
+        elements.append(element)
+    }
+    mutating func dequeue()->T? {
+        return elements.removeLast()
+    }
+    
+    var amountOfBooks : Int{
+        var numberOfBooks = 0
+        for element in elements {
+            numberOfBooks += element.numberOfBooks
+        }
+        return numberOfBooks
+    }
+    subscript (elements: Int ...) -> Int{
+        var numberOfBooks = 0
+        for index in elements where index < self.elements.count {
+            numberOfBooks += self.elements[index].numberOfBooks
+        }
+        return numberOfBooks
+    }
+
+}
+
+extension Queue{
+    func filtred(predicate: (T) -> Bool) -> [T] {
+        var myArr = [T]()
+        for elem in elements {
+            if predicate(elem){
+                myArr.append(elem)
+            }
+        }
+        return myArr
+    }
+}
+
+
+var loadsOfBooks = Queue<Book>()
+
+loadsOfBooks.enqueue(element: Book(numberOfBooks: 8, genre: .fantasy))
+loadsOfBooks.enqueue(element: Book(numberOfBooks: 37, genre: .adventure))
+loadsOfBooks.enqueue(element: Book(numberOfBooks: 5, genre: .science))
+
+
+
+loadsOfBooks[0, 1, 2, 3]
+let bigBouquet = loadsOfBooks.filtred(predicate: {$0.numberOfBooks > 8})
+print("Big Library")
